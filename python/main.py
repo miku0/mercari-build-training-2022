@@ -44,6 +44,13 @@ def add_item(name: str = Form(...),category: str = Form(...)):
     logger.info(f"Receive item: {name}, {category}")
     return {"message": f"item received: {name}, category: {category}"}
 
+@app.get("/items")
+def show_item():
+    read_file=open('items.json','r')
+    read_data=json.load(read_file)
+    read_file.close()
+    return {f"{read_data}"}
+
 @app.get("/image/{items_image}")
 async def get_image(items_image):
     # Create image path

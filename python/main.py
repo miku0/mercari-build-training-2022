@@ -77,6 +77,21 @@ def show_item():
     return {f"{read_data}"}
     '''
 
+@app.get("/search")
+def search_item(keyword: str):
+    dbname = '../db/mercari.sqlite3'
+    conn = sqlite3.connect(dbname)
+    cur = conn.cursor()
+    cur.execute("select * from items where name like ?", ('%'+keyword+'%',))
+    items = cur.fetchall()
+    result = {'items':[]}
+    for i in range(len(items)):
+        result['items'].append({'name':items[i][1],'category':items[i][2]})
+    conn.commit()
+    conn.close()
+
+    return result
+
 @app.get("/image/{items_image}")
 async def get_image(items_image):
     # Create image path

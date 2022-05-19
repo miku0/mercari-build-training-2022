@@ -48,10 +48,10 @@ def show_item_info(item_id):
     cur = conn.cursor()
     cur.execute("select name,category,image_filename from items where id = ?", item_id)
     items = cur.fetchall()
+    result = {'name': items[0][0], 'category': items[0][1],'image':items[0][2]}
     conn.commit()
     conn.close()
-
-    return items
+    return result
 
 
 @app.get("/items")

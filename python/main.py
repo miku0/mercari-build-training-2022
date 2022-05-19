@@ -32,11 +32,6 @@ def add_item(name: str = Form(...),category: str = Form(...),image: str = Form(.
     dbname = '../db/mercari.sqlite3'
     conn = sqlite3.connect(dbname)
     cur = conn.cursor()
-    # for initialize
-    #cur.execute(
-    #    'CREATE TABLE items(id INTEGER PRIMARY KEY AUTOINCREMENT, nameSTRING , category INTEGER)'
-    #)
-    # Add the dat
     image_HashedName = hashlib.sha256(image.encode('utf-8')).hexdigest()+".jpg"
     sql = 'insert into items (name, category, image_filename) values (?,?,?)'
     data = (name,category,image_HashedName)
@@ -45,6 +40,19 @@ def add_item(name: str = Form(...),category: str = Form(...),image: str = Form(.
     conn.close()
 
     return {"message": f"item received: {name}, category: {category},name: {image_HashedName}"}
+
+@app.get("/items/{item_id}")
+def show_item_info(item_id):
+    dbname = '../db/mercari.sqlite3'
+    conn = sqlite3.connect(dbname)
+    cur = conn.cursor()
+    cur.execute("select name,category,image_filename from items where id = ?", item_id)
+    items = cur.fetchall()
+    conn.commit()
+    conn.close()
+
+    return items
+
 
 @app.get("/items")
 def show_item():

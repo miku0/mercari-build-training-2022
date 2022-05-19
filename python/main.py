@@ -1,9 +1,11 @@
+from distutils.command.upload import upload
 import os
 import logging
 import pathlib
 import json
 import sqlite3
-from fastapi import FastAPI, Form, HTTPException
+import hashlib
+from fastapi import FastAPI, Form, HTTPException,File,UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,40 +27,24 @@ def root():
     return {"message": "Hello, world!"}
 
 @app.post("/items")
-def add_item(name: str = Form(...),category: str = Form(...)):
+def add_item(name: str = Form(...),category: str = Form(...),image: str = Form(...)):
+#def add_item(name: str = Form(...),category: str = Form(...),image: UploadFile = File(...)):
     dbname = '../db/mercari.sqlite3'
     conn = sqlite3.connect(dbname)
     cur = conn.cursor()
+    # for initialize
     #cur.execute(
     #    'CREATE TABLE items(id INTEGER PRIMARY KEY AUTOINCREMENT, nameSTRING , category INTEGER)'
     #)
-    # Add the data
-    sql = 'insert into items (name, category) values (?,?)'
-    data = (name,category)
+    # Add the dat
+    image_HashedName = hashlib.sha256(image.encode('utf-8')).hexdigest()+".jpg"
+    sql = 'insert into items (name, category, image_filename) values (?,?,?)'
+    data = (name,category,image_HashedName)
     cur.execute(sql, data)
     conn.commit()
     conn.close()
 
-    # Read json
-    '''
-    if not os.path.isfile('items.json'):
-        read_data = {"items":[]}
-    else:
-        read_file=open('items.json','r')
-        read_data=json.load(read_file)
-        read_file.close()
-    # Add the data
-    new_data = {"name":name,"category":category}
-    read_data["items"].append(new_data)
-
-    # Record new data
-    j_read=open('items.json','w')
-    json.dump(read_data,j_read,indent=2)
-    j_read.close()
-
-    logger.info(f"Receive item: {name}, {category}")
-    '''
-    return {"message": f"item received: {name}, category: {category}"}
+    return {"message": f"item received: {name}, category: {category},name: {image_HashedName}"}
 
 @app.get("/items")
 def show_item():
@@ -70,12 +56,6 @@ def show_item():
     conn.commit()
     conn.close()
     return items
-    '''
-    read_file=open('items.json','r')
-    read_data=json.load(read_file)
-    read_file.close()
-    return {f"{read_data}"}
-    '''
 
 @app.get("/search")
 def search_item(keyword: str):
